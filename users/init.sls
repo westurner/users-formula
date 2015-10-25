@@ -29,7 +29,9 @@ include:
 {%- if user == None -%}
 {%- set user = {} -%}
 {%- endif -%}
-{%- set home = user.get('home', "/home/%s" % name) -%}
+
+{%- set home_prefix = users.get('home_prefix', "/home") -%}
+{%- set home = user.get('home', "%s/%s" % (home_prefix, name)) -%}
 
 {%- if 'prime_group' in user and 'name' in user['prime_group'] %}
 {%- set user_group = user.prime_group.name -%}
@@ -100,7 +102,7 @@ include:
 
 user_keydir_{{ name }}:
   file.directory:
-    - name: {{ user.get('home', '/home/{0}'.format(name)) }}/.ssh
+    - name: {{ home }}/.ssh
     - user: {{ name }}
     - group: {{ user_group }}
     - makedirs: True
@@ -116,7 +118,7 @@ user_keydir_{{ name }}:
   {% set key_type = 'id_' + user.get('ssh_key_type', 'rsa') %}
 user_{{ name }}_private_key:
   file.managed:
-    - name: {{ user.get('home', '/home/{0}'.format(name)) }}/.ssh/{{ key_type }}
+    - name: {{ home }}/.ssh/{{ key_type }}
     - user: {{ name }}
     - group: {{ user_group }}
     - mode: 600
@@ -129,7 +131,7 @@ user_{{ name }}_private_key:
       {% endfor %}
 user_{{ name }}_public_key:
   file.managed:
-    - name: {{ user.get('home', '/home/{0}'.format(name)) }}/.ssh/{{ key_type }}.pub
+    - name: {{ home }}/.ssh/{{ key_type }}.pub
     - user: {{ name }}
     - group: {{ user_group }}
     - mode: 644
